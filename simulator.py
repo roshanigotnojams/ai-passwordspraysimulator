@@ -48,6 +48,9 @@ def password_spray(delay=1.0):
                 "username":
                     username,
 
+                "password":
+                    password,
+
                 "result":
                     status,
 
