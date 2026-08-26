@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Password Spray Simulator</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background:
+                radial-gradient(circle at top right, #102b52 0%, transparent 35%),
+                linear-gradient(135deg, #020617, #06152b, #000000);
+
+            color: #e5f2ff;
+            min-height: 100vh;
+        }
+
+
+        .container {
+            width: 92%;
+            max-width: 1250px;
+            margin: auto;
+            padding: 35px 0;
+        }
+
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+
+        .robot {
+            width: 75px;
+            height: 75px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #071a35;
+            border: 2px solid #2563eb;
+            border-radius: 20px;
+
+            font-size: 42px;
+
+            box-shadow:
+                0 0 20px rgba(37, 99, 235, 0.4);
+        }
+
+
+        h1 {
+            margin: 0;
+            color: white;
+            font-size: 32px;
+        }
+
+
+        .subtitle {
+            color: #8fa9c7;
+            margin-top: 7px;
+        }
+
+
+        /* CARDS */
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .card {
+            background: rgba(3, 15, 32, 0.88);
+
+            border: 1px solid #183b63;
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+
+        .card-title {
+            color: #8fa9c7;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+            color: white;
+        }
+
+
+        /* CONTROL PANEL */
+
+        .panel {
+            background: rgba(3, 15, 32, 0.9);
+
+            border: 1px solid #183b63;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            margin-bottom: 22px;
+        }
+
+
+        #startButton {
+            background: #0b5ed7;
+
+            color: white;
+
+            border: none;
+
+            padding: 13px 25px;
+
+            border-radius: 7px;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+
+        #startButton:hover {
+            background: #1478ff;
+
+            transform: translateY(-1px);
+        }
+
+
+        #startButton:disabled {
+            background: #334155;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        #status {
+            margin-top: 18px;
+
+            color: #8fa9c7;
+        }
+
+
+        #alert {
+            margin-top: 15px;
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            background: #071a35;
+
+            border: 1px solid #183b63;
+
+            color: #8fa9c7;
+
+            font-weight: bold;
+        }
+
+
+        .threat {
+            color: #fb7185 !important;
+
+            border-color: #be123c !important;
+
+            animation: pulse 1.2s infinite;
+        }
+
+
+        @keyframes pulse {
+
+            0% {
+                box-shadow: 0 0 0 rgba(244, 63, 94, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
+            }
+
+            100% {
+                box-shadow: 0 0 0 rgba(244, 63, 94, 0);
+            }
+
+        }
+
+
+        /* CHART AREA */
+
+        .charts {
+            display: grid;
+
+            grid-template-columns:
+                2fr 1fr;
+
+            gap: 22px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .chart-container {
+            position: relative;
+
+            height: 280px;
+        }
+
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+
+        /* TABLE */
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            margin-top: 10px;
+        }
+
+
+        th {
+            background: #071a35;
+
+            color: #9cc8ff;
+        }
+
+
+        th,
+        td {
+            padding: 13px;
+
+            border-bottom:
+                1px solid #18324f;
+
+            text-align: left;
+        }
+
+
+        td {
+            color: #d5e7fa;
+        }
+
+
+        .success {
+            color: #4ade80;
+
+            font-weight: bold;
+        }
+
+
+        .failed {
+            color: #fb7185;
+
+            font-weight: bold;
+        }
+
+
+        .empty {
+            text-align: center;
+
+            color: #64748b;
+
+            padding: 30px;
+        }
+
+
+        /* ROBOT MESSAGE */
+
+        .robot-message {
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+            color: #9cc8ff;
+        }
+
+
+        .mini-robot {
+            font-size: 35px;
+        }
+
+
+        @media(max-width: 850px) {
+
+            .grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .charts {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="robot">
+            🤖
+        </div>
+
+        <div>
+
+            <h1>
+                AI Password Spray Simulator
+            </h1>
+
+            <div class="subtitle">
+                Controlled fake-user cybersecurity sandbox
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+
+    <div class="grid">
+
+
+        <div class="card">
+
+            <div class="card-title">
+                TOTAL ATTEMPTS
+            </div>
+
+            <div
+                class="number"
+                id="totalAttempts"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                SUCCESSFUL
+            </div>
+
+            <div
+                class="number"
+                id="successfulAttempts"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                FAILED
+            </div>
+
+            <div
+                class="number"
+                id="failedAttempts"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                UNIQUE USERS
+            </div>
+
+            <div
+                class="number"
+                id="uniqueUsers"
+            >
+                0
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- CONTROL -->
+
+    <div class="panel">
+
+
+        <button id="startButton">
+
+            🤖 Start Live Simulation
+
+        </button>
+
+
+        <div id="status">
+
+            Ready
+
+        </div>
+
+
+        <div id="alert">
+
+            🛡️ No threats detected.
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ROBOT MESSAGE -->
+
+    <div class="panel">
+
+        <div class="robot-message">
+
+            <div class="mini-robot">
+                🤖
+            </div>
+
+            <div>
+
+                <strong>
+                    CyberBot
+                </strong>
+
+                <br>
+
+                <span id="robotMessage">
+                    I'm ready to monitor the sandbox! ✨
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CHARTS -->
+
+    <div class="charts">
+
+
+        <div class="panel">
+
+            <h2>
+                📊 Authentication Activity
+            </h2>
+
+            <div class="chart-container">
+
+                <canvas id="activityChart">
+                </canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <h2>
+                📈 Results
+            </h2>
+
+            <div class="chart-container">
+
+                <canvas id="resultChart">
+                </canvas>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- LOG TABLE -->
+
+    <div class="panel">
+
+
+        <h2>
+            🔐 Live Authentication Activity
+        </h2>
+
+
+        <table>
+
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Time
+                    </th>
+
+                    <th>
+                        Username
+                    </th>
+
+                    <th>
+                        Result
+                    </th>
+
+                    <th>
+                        Round
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="logTable">
+
+
+                <tr>
+
+                    <td
+                        colspan="4"
+                        class="empty"
+                    >
+
+                        No simulation running
+
+                    </td>
+
+                </tr>
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+    const startButton =
+        document.getElementById(
+            "startButton"
+        );
+
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    const alertBox =
+        document.getElementById(
+            "alert"
+        );
+
+
+    const table =
+        document.getElementById(
+            "logTable"
+        );
+
+
+    const robotMessage =
+        document.getElementById(
+            "robotMessage"
+        );
+
+
+    const totalAttempts =
+        document.getElementById(
+            "totalAttempts"
+        );
+
+
+    const successfulAttempts =
+        document.getElementById(
+            "successfulAttempts"
+        );
+
+
+    const failedAttempts =
+        document.getElementById(
+            "failedAttempts"
+        );
+
+
+    const uniqueUsers =
+        document.getElementById(
+            "uniqueUsers"
+        );
+
+
+    let eventSource = null;
+
+
+    let total = 0;
+
+    let success = 0;
+
+    let failed = 0;
+
+    let users = new Set();
+
+    let rounds = {};
+
+
+
+    /*
+        CANVAS CHARTS
+    */
+
+
+    const activityCanvas =
+        document.getElementById(
+            "activityChart"
+        );
+
+
+    const activityContext =
+        activityCanvas.getContext("2d");
+
+
+    const resultCanvas =
+        document.getElementById(
+            "resultChart"
+        );
+
+
+    const resultContext =
+        resultCanvas.getContext("2d");
+
+
+
+    function resizeCanvas(canvas) {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        canvas.width =
+            rect.width;
+
+        canvas.height =
+            rect.height;
+
+    }
+
+
+
+    function drawActivityChart() {
+
+        resizeCanvas(
+            activityCanvas
+        );
+
+
+        const ctx =
+            activityContext;
+
+
+        const width =
+            activityCanvas.width;
+
+
+        const height =
+            activityCanvas.height;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const values =
+            Object.values(rounds);
+
+
+        if (values.length === 0) {
+
+            ctx.fillStyle =
+                "#64748b";
+
+            ctx.font =
+                "16px Arial";
+
+            ctx.fillText(
+                "Waiting for activity...",
+                20,
+                40
+            );
+
+            return;
+
+        }
+
+
+        const max =
+            Math.max(...values, 1);
+
+
+        const barWidth =
+            width /
+            values.length;
+
+
+        values.forEach(
+            (value, index) => {
+
+                const barHeight =
+                    (value / max) *
+                    (height - 50);
+
+
+                const x =
+                    index *
+                    barWidth +
+                    15;
+
+
+                const y =
+                    height -
+                    barHeight -
+                    30;
+
+
+                ctx.fillStyle =
+                    "#2563eb";
+
+
+                ctx.fillRect(
+                    x,
+                    y,
+                    barWidth - 30,
+                    barHeight
+                );
+
+
+                ctx.fillStyle =
+                    "#8fa9c7";
+
+
+                ctx.font =
+                    "12px Arial";
+
+
+                ctx.fillText(
+                    "R" + (index + 1),
+                    x,
+                    height - 10
+                );
+
+            }
+        );
+
+    }
+
+
+
+    function drawResultChart() {
+
+        resizeCanvas(
+            resultCanvas
+        );
+
+
+        const ctx =
+            resultContext;
+
+
+        const width =
+            resultCanvas.width;
+
+
+        const height =
+            resultCanvas.height;
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        const totalResults =
+            success + failed;
+
+
+        if (totalResults === 0) {
+
+            ctx.fillStyle =
+                "#64748b";
+
+            ctx.font =
+                "16px Arial";
+
+            ctx.fillText(
+                "Waiting for results...",
+                20,
+                40
+            );
+
+            return;
+
+        }
+
+
+        const centerX =
+            width / 2;
+
+
+        const centerY =
+            height / 2;
+
+
+        const radius =
+            Math.min(
+                width,
+                height
+            ) / 3;
+
+
+        const successAngle =
+            (success /
+                totalResults) *
+            Math.PI * 2;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            centerX,
+            centerY
+        );
+
+        ctx.arc(
+            centerX,
+            centerY,
+            radius,
+            0,
+            successAngle
+        );
+
+        ctx.closePath();
+
+        ctx.fillStyle =
+            "#22c55e";
+
+        ctx.fill();
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            centerX,
+            centerY
+        );
+
+        ctx.arc(
+            centerX,
+            centerY,
+            radius,
+            successAngle,
+            Math.PI * 2
+        );
+
+        ctx.closePath();
+
+        ctx.fillStyle =
+            "#ef4444";
+
+        ctx.fill();
+
+
+        ctx.fillStyle =
+            "#ffffff";
+
+        ctx.font =
+            "bold 16px Arial";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.fillText(
+            totalResults +
+            " attempts",
+            centerX,
+            centerY + 6
+        );
+
+
+        ctx.textAlign =
+            "left";
+
+    }
+
+
+
+    /*
+        START SIMULATION
+    */
+
+
+    startButton.addEventListener(
+        "click",
+        function () {
+
+
+            if (eventSource !== null) {
+
+                eventSource.close();
+
+            }
+
+
+            table.innerHTML = "";
+
+
+            total = 0;
+
+            success = 0;
+
+            failed = 0;
+
+            users = new Set();
+
+            rounds = {};
+
+
+            updateCounters();
+
+            drawActivityChart();
+
+            drawResultChart();
+
+
+            status.textContent =
+                "Simulation running...";
+
+
+            alertBox.textContent =
+                "🛡️ Monitoring authentication activity...";
+
+
+            alertBox.classList.remove(
+                "threat"
+            );
+
+
+            robotMessage.textContent =
+                "I'm watching the authentication activity! 👀";
+
+
+            startButton.disabled =
+                true;
+
+
+            startButton.textContent =
+                "🤖 Simulation Running...";
+
+
+            eventSource =
+                new EventSource(
+                    "/stream"
+                );
+
+
+            eventSource.onmessage =
+                function(event) {
+
+
+                    const data =
+                        JSON.parse(
+                            event.data
+                        );
+
+
+                    if (data === "DONE") {
+
+                        finishSimulation();
+
+                        return;
+
+                    }
+
+
+                    const log =
+                        data.log;
+
+
+                    const detection =
+                        data.detection;
+
+
+                    total++;
+
+
+                    users.add(
+                        log.username
+                    );
+
+
+                    if (
+                        log.result ===
+                        "SUCCESS"
+                    ) {
+
+                        success++;
+
+                    }
+                    else {
+
+                        failed++;
+
+                    }
+
+
+                    if (
+                        !rounds[
+                            log.round
+                        ]
+                    ) {
+
+                        rounds[
+                            log.round
+                        ] = 0;
+
+                    }
+
+
+                    rounds[
+                        log.round
+                    ]++;
+
+
+                    updateCounters();
+
+
+                    drawActivityChart();
+
+                    drawResultChart();
+
+
+                    const row =
+                        document.createElement(
+                            "tr"
+                        );
+
+
+                    const resultClass =
+                        log.result ===
+                        "SUCCESS"
+                            ? "success"
+                            : "failed";
+
+
+                    row.innerHTML = `
+
+                        <td>
+                            ${log.timestamp}
+                        </td>
+
+                        <td>
+                            ${log.username}
+                        </td>
+
+                        <td class="${resultClass}">
+                            ${log.result}
+                        </td>
+
+                        <td>
+                            ${log.round}
+                        </td>
+
+                    `;
+
+
+                    table.appendChild(
+                        row
+                    );
+
+
+                    if (
+                        detection.detected
+                    ) {
+
+                        alertBox.textContent =
+                            "🚨 " +
+                            detection.message +
+                            " | Confidence: " +
+                            detection.confidence +
+                            "%";
+
+
+                        alertBox.classList.add(
+                            "threat"
+                        );
+
+
+                        robotMessage.textContent =
+                            "Uh-oh! I found a suspicious pattern! 🚨🤖";
+
+                    }
+
+                };
+
+
+            eventSource.onerror =
+                function() {
+
+                    finishSimulation();
+
+                };
+
+
+        }
+    );
+
+
+
+    function updateCounters() {
+
+        totalAttempts.textContent =
+            total;
+
+
+        successfulAttempts.textContent =
+            success;
+
+
+        failedAttempts.textContent =
+            failed;
+
+
+        uniqueUsers.textContent =
+            users.size;
+
+    }
+
+
+
+    function finishSimulation() {
+
+        status.textContent =
+            "Simulation completed.";
+
+
+        if (
+            !alertBox.classList.contains(
+                "threat"
+            )
+        ) {
+
+            alertBox.textContent =
+                "🛡️ Simulation completed.";
+
+            robotMessage.textContent =
+                "Simulation finished! Nice work, analyst! 🤖✨";
+
+        }
+
+
+        startButton.disabled =
+            false;
+
+
+        startButton.textContent =
+            "🤖 Start Live Simulation";
+
+
+        if (
+            eventSource !== null
+        ) {
+
+            eventSource.close();
+
+            eventSource = null;
+
+        }
+
+    }
+
+
+    window.addEventListener(
+        "resize",
+        function() {
+
+            drawActivityChart();
+
+            drawResultChart();
+
+        }
+    );
+
+
+</script>
+
+
+</body>
+
+</html>
